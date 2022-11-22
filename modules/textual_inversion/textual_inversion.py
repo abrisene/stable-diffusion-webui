@@ -1,22 +1,22 @@
+import csv
+import datetime
+import html
 import os
 import sys
 import traceback
 
 import torch
 import tqdm
-import html
-import datetime
-import csv
-
 from PIL import Image, PngImagePlugin
 
-from modules import shared, devices, sd_hijack, processing, sd_models, images, sd_samplers
 import modules.textual_inversion.dataset
+from modules import (devices, images, processing, sd_hijack, sd_models,
+                     sd_samplers, shared)
+from modules.textual_inversion.image_embedding import (
+    caption_image_overlay, embedding_from_b64, embedding_to_b64,
+    extract_image_data_embed, insert_image_data_embed)
 from modules.textual_inversion.learn_schedule import LearnRateScheduler
 
-from modules.textual_inversion.image_embedding import (embedding_to_b64, embedding_from_b64,
-                                                       insert_image_data_embed, extract_image_data_embed,
-                                                       caption_image_overlay)
 
 class Embedding:
     def __init__(self, vec, name, step=None):
@@ -127,7 +127,7 @@ class EmbeddingDatabase:
             try:
                 fullfn = os.path.join(self.embeddings_dir, fn)
 
-                if os.stat(fullfn).st_size == 0:
+                if os.stat(fullfn).st_size == 0 or fn.startswith('.'):
                     continue
 
                 process_file(fullfn, fn)
@@ -195,7 +195,7 @@ def write_loss(log_directory, filename, step, epoch_len, values):
             csv_writer.writeheader()
 
         epoch = step // epoch_len
-        epoch_step = step % epoch_len 
+        epoch_step = step % epoch_len
 
         csv_writer.writerow({
             "step": step + 1,
